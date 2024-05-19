@@ -13,6 +13,12 @@ Make sure to enable Github Pages for your project. (Source: Github Actions)
 After that, clone your new repository and update the `meta.yml`. 
 You should ahve a look at the [`ref.yml`](https://github.com/coq-community/templates/blob/master/ref.yml) from Coq-Community.
 
+You must also update the following line in the `Makefile`:
+```
+COMPONENTS := theories:CoMoProj
+```
+It should match your choosen namespace.
+
 Now execute
 ```
 ./generate.sh
