@@ -19,40 +19,38 @@ action_appendix: |2-
               mkdir public
               cp -r html public/docs
               cp resources/index.md public/index.md
-        - name: Setup Pages
-          uses: actions/configure-pages@v5
-        - name: Build with Jekyll
-          uses: actions/jekyll-build-pages@v1
+        - name: Upload Artifact
+          uses: actions/upload-artifact@v4
           with:
-            source: ./public
-            destination: ./_site
+            path: public
         - name: Revert Coq user permissions
           # to avoid a warning at cleanup time
           if: ${{ always() }}
           run: sudo chown -R 1001:116 .
-        - name: Upload Artifact
-          uses: actions/upload-pages-artifact@v3
-          with:
-            path: "./_site"
     deploy:
-      needs: build
-
-      # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
-      permissions:
-        pages: write      # to deploy to Pages
-        id-token: write   # to verify the deployment originates from an appropriate source
-
-      # Deploy to the github-pages environment
-      environment:
-        name: github-pages
-        url: ${{ steps.deployment.outputs.page_url }}
-
-      # Specify runner + deployment step
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       runs-on: ubuntu-latest
+      needs: build
+      permissions:
+        contents: write
+
       steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Download artifact
+          uses: actions/download-artifact@v4
+          with:
+            name: html-output
+            path: ./out
+
         - name: Deploy to GitHub Pages
-          id: deployment
-          uses: actions/deploy-pages@v4 # or specific "vX.X.X" version tag for this action
+          uses: peaceiris/actions-gh-pages@v4
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ./out
+            publish_branch: gh-pages
+            enable_jekyll: true
 
 community: false
 coqdoc: true
